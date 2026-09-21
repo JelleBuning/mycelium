@@ -1,8 +1,11 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/Mycelium.Api.Application/Mycelium.Api.Application.csproj" />
-    <Project Path="src/Mycelium.Api.Domain/Mycelium.Api.Domain.csproj" />
-    <Project Path="src/Mycelium.Api.Infrastructure/Mycelium.Api.Infrastructure.csproj" />
+    <Project Path="src/Mycelium.Api.Auth/Mycelium.Api.Auth.csproj" />
+    <Project Path="src/Mycelium.Api.Core/Mycelium.Api.Core.csproj" />
+    <Project Path="src/Mycelium.Api.Devices/Mycelium.Api.Devices.csproj" />
+    <Project Path="src/Mycelium.Api.EntityFramework/Mycelium.Api.EntityFramework.csproj" />
+    <Project Path="src/Mycelium.Api.Organisations/Mycelium.Api.Organisations.csproj" />
+    <Project Path="src/Mycelium.Api.Users/Mycelium.Api.Users.csproj" />
     <Project Path="src/Mycelium.Api/Mycelium.Api.csproj" />
     <Project Path="src/Mycelium.Common/Mycelium.Common.csproj" />
     <Project Path="src/Mycelium.WorkerService.Common/Mycelium.WorkerService.Common.csproj" />

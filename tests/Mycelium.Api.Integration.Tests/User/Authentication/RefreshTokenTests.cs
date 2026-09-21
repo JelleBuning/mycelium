@@ -1,9 +1,10 @@
 using NUnit.Framework;
 using OtpNet;
-using Mycelium.Api.Application.Commands.Auth.RefreshToken;
-using Mycelium.Api.Application.DTO.Token;
-using Mycelium.Api.Application.DTO.User;
+using Mycelium.Api.Auth.Dto;
+using Mycelium.Api.Auth.RefreshToken.v1;
+using Mycelium.Api.Auth.VerifyTotp.v1;
 using Mycelium.Api.Integration.Tests.Common;
+using Mycelium.Api.Users.Register.v1;
 
 namespace Mycelium.Api.Integration.Tests.User.Authentication;
 
@@ -13,39 +14,35 @@ public class RefreshTokenTests
     public async Task ValidRefreshToken_ShouldReturnNewTokens()
     {
         await using var scope = new TestScope();
-        
-        var registerDto = new RegisterUserDto { Email = "test@test.com", Password = "password" };
-        await scope.Client.PostAsync("/users/register", registerDto);
-        
-        var signInDto = new SignInUserDto { Email = "test@test.com", Password = "password" };
-        var signInResponse = await scope.Client.PostAsync("/auth/users/sign_in", signInDto);
-        var signInResult = await signInResponse.Content.DeserializeAsync<SignInUserResponse>();
-        
+
+        await scope.Client.PostAsync("/api/v1/users/register", new RegisterUserCommand("test@test.com", "password"));
+
+        var signInResponse = await scope.Client.PostAsync("/api/v1/auth/users/sign_in", new { Email = "test@test.com", Password = "password" });
+        var signInResult = await signInResponse.Content.DeserializeAsync<SignInResponse>();
+
         var totp = new Totp(Base32Encoding.ToBytes(signInResult!.TwoFactorToken), step: 30,
             mode: OtpHashMode.Sha1, totpSize: 6);
-        
-        var verifyDto = new VerifyUserDto
-        {
-            UserId = signInResult.UserId,
-            AuthenticityToken = signInResult.AuthenticityToken,
-            OtpAttempt = totp.ComputeTotp()
-        };
-        var verifyResponse = await scope.Client.PostAsync("/auth/users/verify", verifyDto);
-        
+
+        var verifyTotpCommand = new VerifyTotpCommand(
+            signInResult.UserId,
+            signInResult.AuthenticityToken,
+            totp.ComputeTotp());
+        var verifyResponse = await scope.Client.PostAsync("/api/v1/auth/users/verify", verifyTotpCommand);
+
         verifyResponse.ShouldBeOk();
-        
+
         var tokens = await verifyResponse.Content.DeserializeAsync<TokenDto>();
         Assert.That(tokens, Is.Not.Null, "Tokens should not be null");
         Assert.That(tokens!.AccessToken, Is.Not.Null.And.Not.Empty);
         Assert.That(tokens.RefreshToken, Is.Not.Null.And.Not.Empty);
-        
+
         var refreshCommand = new RefreshTokenCommand(
             tokens.AccessToken,
             tokens.RefreshToken
         );
-        
-        var result = await scope.Client.PostAsync("/auth/refresh", refreshCommand);
-        
+
+        var result = await scope.Client.PostAsync("/api/v1/auth/refresh", refreshCommand);
+
         result.ShouldBeOk();
         var newTokens = await result.ShouldDeserializeTo<TokenDto>();
         Assert.That(newTokens.AccessToken, Is.Not.Null.And.Not.Empty);
@@ -57,14 +54,14 @@ public class RefreshTokenTests
     public async Task InvalidRefreshToken_ShouldReturnError()
     {
         await using var scope = new TestScope();
-        
+
         var refreshCommand = new RefreshTokenCommand(
             "invalid-access-token",
             "invalid-refresh-token"
         );
-        
-        var result = await scope.Client.PostAsync("/auth/refresh", refreshCommand);
-        
+
+        var result = await scope.Client.PostAsync("/api/v1/auth/refresh", refreshCommand);
+
         Assert.That(result.IsSuccessStatusCode, Is.False, "Invalid tokens should not return success");
     }
 
@@ -72,14 +69,14 @@ public class RefreshTokenTests
     public async Task EmptyTokens_ShouldReturnBadRequest()
     {
         await using var scope = new TestScope();
-        
+
         var refreshCommand = new RefreshTokenCommand(
             string.Empty,
             string.Empty
         );
-        
-        var result = await scope.Client.PostAsync("/auth/refresh", refreshCommand);
-        
+
+        var result = await scope.Client.PostAsync("/api/v1/auth/refresh", refreshCommand);
+
         result.ShouldBeBadRequest();
     }
 }

@@ -1,5 +1,5 @@
+using Mycelium.Common.DTO.Device;
 using Mycelium.WorkerService.Common.Api.Interfaces;
-using Mycelium.WorkerService.Common.DTO;
 using Mycelium.WorkerService.Common.Services.Interfaces;
 
 namespace Mycelium.WorkerService.Common.Api;
@@ -7,7 +7,7 @@ namespace Mycelium.WorkerService.Common.Api;
 public class AuthenticationHandler(MyceliumApiService apiService, ICredentialManager credentialManager)
     : IAuthenticationHandler
 {
-    public async Task<DeviceRegistrationResponse> EnsureAuthenticatedAsync(Guid organisationHash, string name,
+    public async Task<DeviceTokenResponse> EnsureAuthenticatedAsync(Guid organisationHash, string name,
         CancellationToken cancellationToken)
     {
         var deviceToken = await credentialManager.GetDeviceDetailsAsync() 

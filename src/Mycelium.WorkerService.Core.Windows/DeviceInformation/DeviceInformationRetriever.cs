@@ -8,10 +8,10 @@ namespace Mycelium.WorkerService.Core.Windows.DeviceInformation;
 #pragma warning disable CA1416
 public class DeviceInformationRetriever : IDeviceInformationRetriever
 {
-    public GetDeviceInformationDto Retrieve()
+    public DeviceInformationDto Retrieve()
     {
         Kernel32Helper.GetPhysicallyInstalledSystemMemory(out var memKb);
-        return new GetDeviceInformationDto
+        return new DeviceInformationDto
         {
             DeviceName = Environment.MachineName,
             OsName = GetSystemManagementString("Win32_OperatingSystem", "Caption"),

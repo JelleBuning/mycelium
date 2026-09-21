@@ -10,12 +10,12 @@ public class SecurityInformationModule(
     ILogger<SecurityInformationModule> logger,
     IScheduledModuleConfig<SecurityInformationModule> config,
     ISecurityInformationRetriever securityInformationRetriever,
-    MyceliumApiService MyceliumApiService)
+    MyceliumApiService myceliumApiService)
     : ScheduledModuleBase<SecurityInformationModule>(logger, config, runImmediately: true)
 {
     public override async Task Execute(CancellationToken cancellationToken)
     {
         var securityInfo = securityInformationRetriever.Retrieve();
-        await MyceliumApiService.UpdateSecurityInformationAsync(securityInfo);
+        await myceliumApiService.UpdateSecurityInformationAsync(securityInfo);
     }
 }

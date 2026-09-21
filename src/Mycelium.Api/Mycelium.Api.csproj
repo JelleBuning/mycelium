@@ -8,17 +8,26 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+        <PackageReference Include="Mediator.Abstractions" />
+        <PackageReference Include="Mediator.SourceGenerator">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Scalar.AspNetCore" />
+        <PackageReference Include="Serilog" />
+        <PackageReference Include="Serilog.Sinks.Console" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Mycelium.Api.Application\Mycelium.Api.Application.csproj" />
-        <ProjectReference Include="..\Mycelium.Api.Infrastructure\Mycelium.Api.Infrastructure.csproj" />
+        <ProjectReference Include="..\Mycelium.Api.Auth\Mycelium.Api.Auth.csproj" />
+        <ProjectReference Include="..\Mycelium.Api.Core\Mycelium.Api.Core.csproj" />
+        <ProjectReference Include="..\Mycelium.Api.Devices\Mycelium.Api.Devices.csproj" />
+        <ProjectReference Include="..\Mycelium.Api.EntityFramework\Mycelium.Api.EntityFramework.csproj" />
+        <ProjectReference Include="..\Mycelium.Api.Organisations\Mycelium.Api.Organisations.csproj" />
+        <ProjectReference Include="..\Mycelium.Api.Users\Mycelium.Api.Users.csproj" />
         <ProjectReference Include="..\Mycelium.Common\Mycelium.Common.csproj" />
     </ItemGroup>
 

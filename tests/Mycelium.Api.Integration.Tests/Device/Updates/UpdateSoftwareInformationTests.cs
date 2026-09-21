@@ -23,7 +23,7 @@ public class UpdateSoftwareInformationTests
         };
         var device = scope.Organisation.Devices.Single();
         
-        var result = await scope.Client.PutAsync($"/devices/{device!.Id}/software", updateDto);
+        var result = await scope.Client.PutAsync($"/api/v1/devices/{device!.Id}/software", updateDto);
         
         result.ShouldBeOk();
     }
@@ -43,7 +43,7 @@ public class UpdateSoftwareInformationTests
             ]
         };
         
-        var result = await scope.Client.PutAsync("/devices/1/software", updateDto);
+        var result = await scope.Client.PutAsync("/api/v1/devices/1/software", updateDto);
         
         result.ShouldBeUnauthorized();
     }

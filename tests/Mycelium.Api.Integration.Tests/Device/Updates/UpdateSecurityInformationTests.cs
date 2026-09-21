@@ -31,7 +31,7 @@ public class UpdateSecurityInformationTests
         
         var device = scope.Organisation.Devices.Single();
         
-        var result = await scope.Client.PutAsync($"/devices/{device!.Id}/security", updateDto);
+        var result = await scope.Client.PutAsync($"/api/v1/devices/{device!.Id}/security", updateDto);
         result.ShouldBeOk();
     }
 
@@ -57,7 +57,7 @@ public class UpdateSecurityInformationTests
             }
         };
         
-        var result = await scope.Client.PutAsync("/devices/1/security", updateDto);
+        var result = await scope.Client.PutAsync("/api/v1/devices/1/security", updateDto);
         
         result.ShouldBeUnauthorized();
     }

@@ -1,7 +1,8 @@
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using Mycelium.WorkerService.Common.DTO;
+using Mycelium.Common.DTO.Device;
 using Mycelium.WorkerService.Common.Services.Interfaces;
+using RefreshTokenResponse = Mycelium.WorkerService.Common.DTO.DeviceTokenResponse;
 
 namespace Mycelium.WorkerService.Common.Services;
 
@@ -10,24 +11,24 @@ public class CredentialManager(IConfiguration configuration) : ICredentialManage
     private static readonly string Path =
         System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "credentials.json");
 
-    public async Task SetDeviceDetailsAsync(DeviceRegistrationResponse deviceRegistrationResponse)
+    public async Task SetDeviceDetailsAsync(DeviceTokenResponse deviceTokenResponse)
     {
-        configuration["Id"] = deviceRegistrationResponse.Id.ToString();
-        configuration["OrganisationId"] = deviceRegistrationResponse.OrganisationId.ToString();
-        configuration["AccessToken"] = deviceRegistrationResponse.AccessToken;
-        configuration["RefreshToken"] = deviceRegistrationResponse.RefreshToken;
-        await File.WriteAllTextAsync(Path, JsonSerializer.Serialize(deviceRegistrationResponse));
+        configuration["Id"] = deviceTokenResponse.Id.ToString();
+        configuration["OrganisationId"] = deviceTokenResponse.OrganisationId.ToString();
+        configuration["AccessToken"] = deviceTokenResponse.AccessToken;
+        configuration["RefreshToken"] = deviceTokenResponse.RefreshToken;
+        await File.WriteAllTextAsync(Path, JsonSerializer.Serialize(deviceTokenResponse));
     }
 
-    public async Task SetTokensAsync(DeviceTokenResponse deviceTokenResponse)
+    public async Task SetTokensAsync(RefreshTokenResponse refreshTokenResponse)
     {
         var deviceModel = await GetDeviceDetailsAsync() ?? throw new Exception("No model in storage");
-        deviceModel.AccessToken = deviceTokenResponse.AccessToken;
-        deviceModel.RefreshToken = deviceTokenResponse.RefreshToken;
+        deviceModel.AccessToken = refreshTokenResponse.AccessToken;
+        deviceModel.RefreshToken = refreshTokenResponse.RefreshToken;
         await SetDeviceDetailsAsync(deviceModel);
     }
 
-    public async Task<DeviceRegistrationResponse?> GetDeviceDetailsAsync()
+    public async Task<DeviceTokenResponse?> GetDeviceDetailsAsync()
     {
         if (!File.Exists(Path))
         {
@@ -35,6 +36,6 @@ public class CredentialManager(IConfiguration configuration) : ICredentialManage
         }
 
         var fileContent = await File.ReadAllTextAsync(Path);
-        return JsonSerializer.Deserialize<DeviceRegistrationResponse>(fileContent);
+        return JsonSerializer.Deserialize<DeviceTokenResponse>(fileContent);
     }
 }

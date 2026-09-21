@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using Mycelium.Api.Infrastructure.Persistence;
+using Mycelium.Api.EntityFramework.Persistence;
 
 namespace Mycelium.Api.Integration.Tests.Common;
 

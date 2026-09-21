@@ -27,7 +27,7 @@ public class UpdateStorageInformationTests
         };
         var device = scope.DbContext.Devices.Single();
         
-        var result = await scope.Client.PutAsync($"/devices/{device.Id}/storage", updateDto);
+        var result = await scope.Client.PutAsync($"/api/v1/devices/{device.Id}/storage", updateDto);
         
         result.ShouldBeOk();
     }
@@ -51,7 +51,7 @@ public class UpdateStorageInformationTests
             ]
         };
         
-        var result = await scope.Client.PutAsync("/devices/1/storage", updateDto);
+        var result = await scope.Client.PutAsync("/api/v1/devices/1/storage", updateDto);
         
         result.ShouldBeUnauthorized();
     }

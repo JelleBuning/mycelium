@@ -1,6 +1,6 @@
 using NUnit.Framework;
-using Mycelium.Api.Application.DTO.User;
 using Mycelium.Api.Integration.Tests.Common;
+using Mycelium.Api.Users.Register.v1;
 
 namespace Mycelium.Api.Integration.Tests.User.Authentication;
 
@@ -11,11 +11,7 @@ public class RegisterTests
     {
         await using var scope = new TestScope();
 
-        var result = await scope.Client.PostAsync("/users/register", new RegisterUserDto
-        {
-            Email = "test@test.com",
-            Password = "password",
-        });
+        var result = await scope.Client.PostAsync("/api/v1/users/register", new RegisterUserCommand("test@test.com", "password"));
 
         result.ShouldBeOk();
     }
@@ -25,14 +21,10 @@ public class RegisterTests
     {
         await using var scope = new TestScope();
 
-        var user = new RegisterUserDto
-        {
-            Email = "test@test.com",
-            Password = "password",
-        };
+        var user = new RegisterUserCommand("test@test.com", "password");
 
-        var result1 = await scope.Client.PostAsync("/users/register", user);
-        var result2 = await scope.Client.PostAsync("/users/register", user);
+        var result1 = await scope.Client.PostAsync("/api/v1/users/register", user);
+        var result2 = await scope.Client.PostAsync("/api/v1/users/register", user);
 
         result1.ShouldBeOk();
         result2.ShouldBeForbidden();

@@ -10,7 +10,7 @@ public class OrganisationTests
     {
         await using var scope = await new TestScope().AuthenticateAsUserAsync();
         
-        var result = await scope.Client.GetAsync("/organisations");
+        var result = await scope.Client.GetAsync("/api/v1/organisations");
         
         result.ShouldBeOk();
     }
@@ -19,7 +19,7 @@ public class OrganisationTests
     public async Task UnAuthorized_GetAll_ShouldReturnUnauthorized()
     {
         await using var scope = new TestScope();
-        var result = await scope.Client.GetAsync("/organisations");
+        var result = await scope.Client.GetAsync("/api/v1/organisations");
         result.ShouldBeUnauthorized();
     }
 }

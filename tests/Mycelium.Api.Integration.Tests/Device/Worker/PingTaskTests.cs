@@ -13,7 +13,7 @@ public class PingTaskTests
       
         var device = scope.DbContext.Devices.Single(x => x.OrganisationId == scope.Organisation.Id);
         
-        var result = await scope.Client.PostAsync($"/devices/{device.Id}/ping");
+        var result = await scope.Client.PostAsync($"/api/v1/devices/{device.Id}/ping");
         result.ShouldBeOk();
     }
     
@@ -21,7 +21,7 @@ public class PingTaskTests
     public async Task UnAuthorized_TaskExecution_ShouldReturnUnauthorized()
     {
         await using var scope = new TestScope();
-        var result = await scope.Client.PostAsync($"/devices/1/ping");
+        var result = await scope.Client.PostAsync($"/api/v1/devices/1/ping");
         result.ShouldBeUnauthorized();
     }
 }
