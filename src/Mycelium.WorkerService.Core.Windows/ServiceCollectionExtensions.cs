@@ -20,7 +20,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ITimeSynchronizer, TimeSynchronizer>();
         
         services.AddSingleton<IDeviceInformationRetriever, DeviceInformationRetriever>();
-        services.AddSingleton<IStorageInformationRetriever, StorageInformationRetriever>();
+        services.AddSingleton<IDiskInformationRetriever, DiskInformationRetriever>();
         services.AddSingleton<IFirewallSettingsRetriever, FirewallSettingsRetriever>();
         services.AddSingleton<ISecurityInformationRetriever, SecurityInformationRetriever>();
         services.AddSingleton<ISoftwareInformationRetriever, SoftwareInformationRetriever>();

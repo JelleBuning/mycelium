@@ -1,16 +1,16 @@
 using System.Net.Http.Headers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using OtpNet;
 using Mycelium.Api.Auth.Dto;
 using Mycelium.Api.Auth.VerifyTotp.v1;
 using Mycelium.Api.EntityFramework.Persistence;
 using Mycelium.Api.Users.Register.v1;
 using Mycelium.Common.DTO.Device;
+using OtpNet;
 using DeviceEntity = Mycelium.Api.EntityFramework.Entities.Device;
 using OrganisationEntity = Mycelium.Api.EntityFramework.Entities.Organisation;
 
-namespace Mycelium.Api.Integration.Tests.Common;
+namespace Mycelium.Api.IntegrationTests.Common;
 
 public sealed class TestScope : IAsyncDisposable
 {

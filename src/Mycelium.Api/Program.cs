@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Mediator;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Mycelium.Api.Auth;

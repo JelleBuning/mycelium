@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Mycelium.Api.EntityFramework.Persistence;
 
-namespace Mycelium.Api.Integration.Tests.Common;
+namespace Mycelium.Api.IntegrationTests.Common;
 
 public class ApiFixture : WebApplicationFactory<Program>
 {

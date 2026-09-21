@@ -9,7 +9,7 @@ namespace Mycelium.WorkerService.Core.Windows.DeviceInformation;
 #pragma warning disable CA1416
 public class SecurityInformationRetriever(IFirewallSettingsRetriever firewallSettingsRetriever) : ISecurityInformationRetriever
 {
-    public SecurityInformationDto Retrieve()
+    public SecurityDto Retrieve()
     {
         const string defenderScope = @"\\.\root\Microsoft\Windows\Defender";
         const string computerStatusKey = "MSFT_MpComputerStatus";
@@ -17,8 +17,8 @@ public class SecurityInformationRetriever(IFirewallSettingsRetriever firewallSet
         var managementBaseObject = managementObjectSearcher.Get().Cast<ManagementBaseObject>().Single();
 
         var x = ParseExact(managementBaseObject["QuickScanStartTime"]);
-        
-        var securityInformation = new SecurityInformationDto
+
+        var securityInformation = new SecurityDto
         {
             AntivirusEnabled = (bool)managementBaseObject["AntiVirusEnabled"],
             LastAntivirusUpdate = ParseExact(managementBaseObject["AntivirusSignatureLastUpdated"]),
@@ -40,7 +40,7 @@ public class SecurityInformationRetriever(IFirewallSettingsRetriever firewallSet
         return securityInformation;
     }
 
-    private static DateTime ParseExact(object mo)
+    internal static DateTime ParseExact(object mo)
     {
         return DateTime.ParseExact(mo.ToString() ?? string.Empty, "yyyyMMddHHmmss.ffffff'+000'", CultureInfo.InvariantCulture);
     }

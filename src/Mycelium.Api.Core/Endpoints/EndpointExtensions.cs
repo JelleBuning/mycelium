@@ -1,6 +1,5 @@
 using System.Reflection;
 using Asp.Versioning;
-using Asp.Versioning.Builder;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;

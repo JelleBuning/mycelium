@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Mycelium.WorkerService.Core.DeviceInformation.Interfaces;
+using Mycelium.WorkerService.Core.Linux.DeviceInformation;
 using Mycelium.WorkerService.Core.Linux.SecurityScan;
 using Mycelium.WorkerService.Core.Linux.TimeSync;
 using Mycelium.WorkerService.Core.SecurityScan;
@@ -15,6 +17,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IRemoteAccessService, LinuxRemoteAccess>();
         services.AddSingleton<ISecurityScanner, LinuxSecurity>();
         services.AddSingleton<ITimeSynchronizer, LinuxTimeSync>();
-
+        services.AddSingleton<IDiskInformationRetriever, DiskInformationRetriever>();
     }
 }

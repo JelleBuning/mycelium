@@ -12,14 +12,21 @@ public class FirewallSettingsRetriever : IFirewallSettingsRetriever
         const string firewallProfileScope = @"\\.\root\StandardCimv2";
         const string firewallProfileKey = "MSFT_NetFirewallProfile";
         using var firewallObjectSearcher = new ManagementObjectSearcher(firewallProfileScope, "SELECT * FROM " + firewallProfileKey);
-        var netFirewallProfiles = firewallObjectSearcher.Get().Cast<ManagementBaseObject>().ToList();
+        var netFirewallProfiles = firewallObjectSearcher.Get().Cast<ManagementBaseObject>()
+            .Select(x => (Name: x["Name"]?.ToString(), Enabled: x["Enabled"]?.ToString()));
 
-        var firewallSettings = new FirewallSettingsDto()
+        return MapToFirewallSettings(netFirewallProfiles);
+    }
+
+    internal static FirewallSettingsDto MapToFirewallSettings(IEnumerable<(string? Name, string? Enabled)> profiles)
+    {
+        var profileList = profiles.ToList();
+
+        return new FirewallSettingsDto
         {
-            DomainFirewallEnabled = netFirewallProfiles.Single(x => x["Name"]?.ToString() == "Domain")["Enabled"]?.ToString() == "1",
-            PrivateFirewallEnabled = netFirewallProfiles.Single(x => x["Name"]?.ToString() == "Private")["Enabled"]?.ToString() == "1",
-            PublicFirewallEnabled = netFirewallProfiles.Single(x => x["Name"]?.ToString() == "Public")["Enabled"]?.ToString() == "1",
+            DomainFirewallEnabled = profileList.Single(x => x.Name == "Domain").Enabled == "1",
+            PrivateFirewallEnabled = profileList.Single(x => x.Name == "Private").Enabled == "1",
+            PublicFirewallEnabled = profileList.Single(x => x.Name == "Public").Enabled == "1",
         };
-        return firewallSettings;
     }
 }
