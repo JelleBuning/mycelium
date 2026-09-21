@@ -31,6 +31,12 @@ public static class HttpResponseAssertions
                 $"Expected Forbidden but got {response.StatusCode}");
         }
 
+        public void ShouldBeNotFound()
+        {
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound),
+                $"Expected NotFound but got {response.StatusCode}");
+        }
+
         public async Task<T> ShouldDeserializeTo<T>()
         {
             var content = await response.Content.DeserializeAsync<T>();

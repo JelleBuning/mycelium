@@ -1,7 +1,9 @@
 using NUnit.Framework;
 using OtpNet;
-using Mycelium.Api.Application.DTO.User;
+using Mycelium.Api.Auth.Dto;
+using Mycelium.Api.Auth.VerifyTotp.v1;
 using Mycelium.Api.Integration.Tests.Common;
+using Mycelium.Api.Users.Register.v1;
 
 namespace Mycelium.Api.Integration.Tests.User.Authentication;
 
@@ -11,18 +13,16 @@ public class VerificationTests
     public async Task Correct_Login_ShouldReturnOK()
     {
         await using var scope = new TestScope();
-        
-        _ = await scope.Client.PostAsync("/users/register", new RegisterUserDto { Email = "test@test.com", Password = "password" });
-        var signInResponse = await scope.Client.PostAsync("/auth/users/sign_in", new SignInUserDto { Email = "test@test.com", Password = "password" });
-        var signInUserResponse = await signInResponse.Content.DeserializeAsync<SignInUserResponse>() ?? throw new Exception("verification response was null");
 
-        var totp = new Totp(Base32Encoding.ToBytes(signInUserResponse.TwoFactorToken), step: 30, mode: OtpHashMode.Sha1, totpSize: 6);
-        var result = await scope.Client.PostAsync("/auth/users/verify", new VerifyUserDto
-        {
-            UserId = signInUserResponse.UserId,
-            AuthenticityToken = signInUserResponse.AuthenticityToken,
-            OtpAttempt = totp.ComputeTotp(),
-        });
+        _ = await scope.Client.PostAsync("/api/v1/users/register", new RegisterUserCommand("test@test.com", "password"));
+        var signInResponse = await scope.Client.PostAsync("/api/v1/auth/users/sign_in", new { Email = "test@test.com", Password = "password" });
+        var signInResult = await signInResponse.Content.DeserializeAsync<SignInResponse>() ?? throw new Exception("verification response was null");
+
+        var totp = new Totp(Base32Encoding.ToBytes(signInResult.TwoFactorToken), step: 30, mode: OtpHashMode.Sha1, totpSize: 6);
+        var result = await scope.Client.PostAsync("/api/v1/auth/users/verify", new VerifyTotpCommand(
+            signInResult.UserId,
+            signInResult.AuthenticityToken,
+            totp.ComputeTotp()));
 
         result.ShouldBeOk();
     }

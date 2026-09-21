@@ -10,12 +10,12 @@ public class StorageInformationModule(
     ILogger<StorageInformationModule> logger,
     IScheduledModuleConfig<StorageInformationModule> config,
     IStorageInformationRetriever storageInformationRetriever,
-    MyceliumApiService MyceliumApiService)
+    MyceliumApiService myceliumApiService)
     : ScheduledModuleBase<StorageInformationModule>(logger, config)
 {
     public override async Task Execute(CancellationToken cancellationToken)
     {
         var storageInfo = storageInformationRetriever.Retrieve();
-        await MyceliumApiService.UpdateStorageInformationAsync(storageInfo);
+        await myceliumApiService.UpdateStorageInformationAsync(storageInfo);
     }
 }

@@ -37,7 +37,7 @@ public class AuthenticationDelegatingHandler(IConfiguration configuration, ICred
         {
             Method = HttpMethod.Post,
             Headers = { Authorization = new AuthenticationHeaderValue("bearer", configuration["AccessToken"])},
-            RequestUri = new Uri($"{configuration.GetConnectionString("Api")}/auth/refresh"),
+            RequestUri = new Uri($"{configuration.GetConnectionString("Api")}/api/v1/auth/refresh"),
             Content = new StringContent(JsonSerializer.Serialize(new 
             {
                 AccessToken = configuration["AccessToken"], 

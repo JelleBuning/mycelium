@@ -10,12 +10,12 @@ public class DeviceInformationModule(
     ILogger<DeviceInformationModule> logger,
     IScheduledModuleConfig<DeviceInformationModule> config,
     IDeviceInformationRetriever deviceInformationRetriever,
-    MyceliumApiService MyceliumApiService)
+    MyceliumApiService myceliumApiService)
     : ScheduledModuleBase<DeviceInformationModule>(logger, config, runImmediately: true)
 {
     public override async Task Execute(CancellationToken cancellationToken)
     {
         var deviceInfo = deviceInformationRetriever.Retrieve();
-        await MyceliumApiService.UpdateDeviceInformationAsync(deviceInfo);
+        await myceliumApiService.UpdateDeviceInformationAsync(deviceInfo);
     }
 }

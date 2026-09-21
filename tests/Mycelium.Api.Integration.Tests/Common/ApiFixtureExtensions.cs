@@ -1,7 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
-using Mycelium.Api.Application.DTO.Device;
-using Mycelium.Api.Application.DTO.User;
-using Mycelium.Api.Infrastructure.Persistence;
+using Mycelium.Api.Auth.Dto;
+using Mycelium.Api.EntityFramework.Persistence;
+using Mycelium.Common.DTO.Device;
+using DeviceEntity = Mycelium.Api.EntityFramework.Entities.Device;
+using OrganisationEntity = Mycelium.Api.EntityFramework.Entities.Organisation;
 
 namespace Mycelium.Api.Integration.Tests.Common;
 
@@ -9,7 +11,7 @@ public static class ApiFixtureExtensions
 {
     extension(ApiFixture fixture)
     {
-        public async Task<(HttpClient client, SignInUserResponse user)> CreateAuthenticatedUserAsync()
+        public async Task<(HttpClient client, SignInResponse user)> CreateAuthenticatedUserAsync()
         {
             var client = fixture.CreateClient();
             var user = await client.AuthenticateUserAsync();
@@ -23,13 +25,13 @@ public static class ApiFixtureExtensions
             return (client, device);
         }
 
-        public async Task<Domain.Entities.Organisation> AddOrganisationAsync(Guid organisationHash)
+        public async Task<OrganisationEntity> AddOrganisationAsync(Guid organisationHash)
         {
             using var scope = fixture.Services.CreateScope();
             await using var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.Database.EnsureCreatedAsync();
 
-            var organisation = new Domain.Entities.Organisation
+            var organisation = new OrganisationEntity
             {
                 Hash = organisationHash
             };
@@ -38,12 +40,12 @@ public static class ApiFixtureExtensions
             return organisation;
         }
 
-        public async Task AddDeviceAsync(Domain.Entities.Device device)
+        public async Task AddDeviceAsync(DeviceEntity device)
         {
             using var scope = fixture.Services.CreateScope();
             await using var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.Database.EnsureCreatedAsync();
-        
+
             dbContext.Devices.Add(device);
             await dbContext.SaveChangesAsync();
         }

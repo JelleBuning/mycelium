@@ -14,6 +14,5 @@
 Ask before: changing public APIs, adding dependencies, choosing between multiple patterns, or impacting security/financial logic.
 
 # Copilot-specific directives
-- When responding to code or design requests, actively consult the other instruction files in `.github/instructions/` (code, architecture, testing, etc.).
 - Prioritize the repository’s explicit guidelines over generic advice and ask clarifying questions if the instructions seem to conflict or are incomplete.
 - Mention the relevant instruction file in your response when you use its guidance, to reinforce awareness.

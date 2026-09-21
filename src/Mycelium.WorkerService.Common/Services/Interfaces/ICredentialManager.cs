@@ -1,10 +1,11 @@
-using Mycelium.WorkerService.Common.DTO;
+using Mycelium.Common.DTO.Device;
+using RefreshTokenResponse = Mycelium.WorkerService.Common.DTO.DeviceTokenResponse;
 
 namespace Mycelium.WorkerService.Common.Services.Interfaces;
 
 public interface ICredentialManager
 {
-    public Task SetDeviceDetailsAsync(DeviceRegistrationResponse deviceRegistrationResponse);
-    public Task SetTokensAsync(DeviceTokenResponse deviceTokenResponse);
-    public Task<DeviceRegistrationResponse?> GetDeviceDetailsAsync();
+    public Task SetDeviceDetailsAsync(DeviceTokenResponse deviceTokenResponse);
+    public Task SetTokensAsync(RefreshTokenResponse refreshTokenResponse);
+    public Task<DeviceTokenResponse?> GetDeviceDetailsAsync();
 }

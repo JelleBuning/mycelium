@@ -1,6 +1,6 @@
 using NUnit.Framework;
-using Mycelium.Api.Application.DTO.User;
 using Mycelium.Api.Integration.Tests.Common;
+using Mycelium.Api.Users.Register.v1;
 
 namespace Mycelium.Api.Integration.Tests.User.Authentication;
 
@@ -11,8 +11,8 @@ public class SignInTests
     {
         await using var scope = new TestScope();
 
-        _ = await scope.Client.PostAsync("/users/register", new RegisterUserDto { Email = "test@test.com", Password = "password" });
-        var result = await scope.Client.PostAsync("/auth/users/sign_in", new SignInUserDto { Email = "test@test.com", Password = "password" });
+        _ = await scope.Client.PostAsync("/api/v1/users/register", new RegisterUserCommand("test@test.com", "password"));
+        var result = await scope.Client.PostAsync("/api/v1/auth/users/sign_in", new { Email = "test@test.com", Password = "password" });
 
         result.ShouldBeOk();
     }
@@ -22,8 +22,8 @@ public class SignInTests
     {
         await using var scope = new TestScope();
 
-        _ = await scope.Client.PostAsync("/users/register", new RegisterUserDto { Email = "test@test.com", Password = "password" });
-        var result = await scope.Client.PostAsync("/auth/users/sign_in", new SignInUserDto { Email = "test@test.com", Password = "hl;asdfljasdjfdaflha;sihjefkldj;aslfjkdsa;dfjasd" });
+        _ = await scope.Client.PostAsync("/api/v1/users/register", new RegisterUserCommand("test@test.com", "password"));
+        var result = await scope.Client.PostAsync("/api/v1/auth/users/sign_in", new { Email = "test@test.com", Password = "hl;asdfljasdjfdaflha;sihjefkldj;aslfjkdsa;dfjasd" });
 
         result.ShouldBeUnauthorized();
     }
@@ -33,8 +33,8 @@ public class SignInTests
     {
         await using var scope = new TestScope();
 
-        _ = await scope.Client.PostAsync("/users/register", new RegisterUserDto { Email = "test@test.com", Password = "password" });
-        var result = await scope.Client.PostAsync("/auth/users/sign_in", new SignInUserDto { Email = "ahjfdkenfine@test.com", Password = "password" });
+        _ = await scope.Client.PostAsync("/api/v1/users/register", new RegisterUserCommand("test@test.com", "password"));
+        var result = await scope.Client.PostAsync("/api/v1/auth/users/sign_in", new { Email = "ahjfdkenfine@test.com", Password = "password" });
 
         result.ShouldBeUnauthorized();
     }

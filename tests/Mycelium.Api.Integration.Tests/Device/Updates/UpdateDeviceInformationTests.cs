@@ -11,8 +11,8 @@ public class UpdateDeviceInformationTests
     {
         await using var scope = new TestScope();
         await scope.AuthenticateAsDeviceAsync();
-        
-        var updateDto = new UpdateDeviceInformationDto
+
+        var updateDto = new DeviceInformationDto
         {
             DeviceName = "Updated Device",
             OsName = "Windows",
@@ -26,9 +26,9 @@ public class UpdateDeviceInformationTests
         };
 
         var device = scope.Organisation.Devices.Single();
-        
-        var result = await scope.Client.PutAsync($"/devices/{device.Id}", updateDto);
-        
+
+        var result = await scope.Client.PutAsync($"/api/v1/devices/{device.Id}", updateDto);
+
         result.ShouldBeOk();
     }
 
@@ -36,8 +36,8 @@ public class UpdateDeviceInformationTests
     public async Task UnauthorizedDevice_UpdateDeviceInformation_ShouldReturnUnauthorized()
     {
         await using var scope = new TestScope();
-        
-        var updateDto = new UpdateDeviceInformationDto
+
+        var updateDto = new DeviceInformationDto
         {
             DeviceName = "Updated Device",
             OsName = "Windows",
@@ -49,9 +49,9 @@ public class UpdateDeviceInformationTests
             GraphicsCard = "NVIDIA RTX 3080",
             Manufacturer = "Dell"
         };
-        
-        var result = await scope.Client.PutAsync("/devices/1", updateDto);
-        
+
+        var result = await scope.Client.PutAsync("/api/v1/devices/1", updateDto);
+
         result.ShouldBeUnauthorized();
     }
 }

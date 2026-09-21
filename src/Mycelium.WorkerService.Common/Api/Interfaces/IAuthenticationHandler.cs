@@ -1,8 +1,8 @@
-using Mycelium.WorkerService.Common.DTO;
+using Mycelium.Common.DTO.Device;
 
 namespace Mycelium.WorkerService.Common.Api.Interfaces;
 
 public interface IAuthenticationHandler
 {
-    public Task<DeviceRegistrationResponse> EnsureAuthenticatedAsync(Guid organisationHash, string name, CancellationToken cancellationToken);
+    public Task<DeviceTokenResponse> EnsureAuthenticatedAsync(Guid organisationHash, string name, CancellationToken cancellationToken);
 }

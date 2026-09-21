@@ -10,12 +10,12 @@ public class SoftwareInformationModule(
     ILogger<SoftwareInformationModule> logger,
     IScheduledModuleConfig<SoftwareInformationModule> config,
     ISoftwareInformationRetriever softwareInformationRetriever,
-    MyceliumApiService MyceliumApiService)
+    MyceliumApiService myceliumApiService)
     : ScheduledModuleBase<SoftwareInformationModule>(logger, config)
 {
     public override async Task Execute(CancellationToken cancellationToken)
     {
         var softwareInfo = softwareInformationRetriever.Retrieve();
-        await MyceliumApiService.UpdateSoftwareInformationAsync(softwareInfo);
+        await myceliumApiService.UpdateSoftwareInformationAsync(softwareInfo);
     }
 }
