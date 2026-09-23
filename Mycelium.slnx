@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/files/">
+    <File Path="Directory.Packages.props" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/Mycelium.Api.Auth/Mycelium.Api.Auth.csproj" />
     <Project Path="src/Mycelium.Api.Core/Mycelium.Api.Core.csproj" />
