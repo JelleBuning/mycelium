@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Mediator;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Mycelium.Api.Auth;
@@ -56,7 +55,6 @@ try
 
     using (var scope = app.Services.CreateScope())
     {
-        // It skips migration in test, non-relational DB
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         if (dbContext.Database.IsRelational()) dbContext.Database.Migrate();
     }
