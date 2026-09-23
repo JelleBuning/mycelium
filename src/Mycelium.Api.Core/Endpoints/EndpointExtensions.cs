@@ -1,6 +1,5 @@
 using System.Reflection;
 using Asp.Versioning;
-using Asp.Versioning.Builder;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
@@ -24,9 +23,8 @@ public static class EndpointExtensions
             {
                 options.GroupNameFormat = "'v'VVV";
                 options.SubstituteApiVersionInUrl = true;
-            });
-
-        services.AddOpenApi();
+            })
+            .AddOpenApi();
 
         var myceliumAssemblies = GetMyceliumAssemblies();
 
@@ -65,17 +63,17 @@ public static class EndpointExtensions
 
         if (app.Environment.IsDevelopment())
         {
-            app.MapOpenApi().AllowAnonymous();
+            app.MapOpenApi().WithDocumentPerVersion().AllowAnonymous();
             app.MapScalarApiReference().AllowAnonymous();
         }
 
         return app;
     }
 
-    private static Assembly[] GetMyceliumAssemblies() =>
-        AppDomain.CurrentDomain.GetAssemblies()
+    private static Assembly[] GetMyceliumAssemblies() => [
+        .. AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => a.GetName().Name?.StartsWith("Mycelium", StringComparison.Ordinal) == true)
-            .ToArray();
+    ];
 
     private static IEnumerable<Type> GetLoadableTypes(Assembly assembly)
     {
