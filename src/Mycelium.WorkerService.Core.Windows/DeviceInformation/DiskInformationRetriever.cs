@@ -1,11 +1,11 @@
-using System.Management;
 using Mycelium.Common.DTO.Device;
 using Mycelium.WorkerService.Core.DeviceInformation.Interfaces;
+using Mycelium.WorkerService.Core.Windows.Wmi;
 
 namespace Mycelium.WorkerService.Core.Windows.DeviceInformation;
 
 #pragma warning disable CA1416
-public class DiskInformationRetriever : IDiskInformationRetriever
+public sealed class DiskInformationRetriever(IWmiQueryService wmiQueryService) : IDiskInformationRetriever
 {
     public List<DiskDto> Retrieve()
     {
@@ -13,6 +13,7 @@ public class DiskInformationRetriever : IDiskInformationRetriever
         var health = GetHealthByDriveLetter();
 
         return DriveInfo.GetDrives()
+            .Where(x => x.IsReady)
             .Select(x => MapToDiskDto(x.Name, x.TotalSize, x.TotalSize - x.TotalFreeSpace, osDir == x.Name, health))
             .ToList();
     }
@@ -32,19 +33,19 @@ public class DiskInformationRetriever : IDiskInformationRetriever
         };
     }
 
-    private static Dictionary<string, string?> GetHealthByDriveLetter()
+    internal Dictionary<string, string?> GetHealthByDriveLetter()
     {
         var result = new Dictionary<string, string?>();
 
         try
         {
-            using var diskDriveSearcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
-            foreach (var diskDrive in diskDriveSearcher.Get().Cast<ManagementObject>())
+            var diskDrives = wmiQueryService.Query("SELECT * FROM Win32_DiskDrive");
+            foreach (var diskDrive in diskDrives)
             {
                 try
                 {
-                    var deviceId = diskDrive["DeviceID"]?.ToString();
-                    var status = diskDrive["Status"]?.ToString();
+                    var deviceId = diskDrive.TryGetValue("DeviceID", out var deviceIdValue) ? deviceIdValue?.ToString() : null;
+                    var status = NormalizeStatus(diskDrive.TryGetValue("Status", out var statusValue) ? statusValue?.ToString() : null);
                     if (deviceId is null)
                     {
                         continue;
@@ -57,31 +58,43 @@ public class DiskInformationRetriever : IDiskInformationRetriever
                 }
                 catch
                 {
-                    // ignored - health data is best-effort per disk
                 }
             }
         }
         catch
         {
-            // ignored - health data is best-effort
         }
 
         return result;
     }
 
-    private static IEnumerable<string> GetDriveLettersForDisk(string diskDeviceId)
+    internal static string? NormalizeStatus(string? wmiStatus)
     {
-        using var partitionSearcher = new ManagementObjectSearcher(
+        return wmiStatus switch
+        {
+            null => null,
+            "OK" => DiskHealthStatus.Ok,
+            "Degraded" or "Stressed" => DiskHealthStatus.Degraded,
+            "Pred Fail" or "Error" or "NonRecover" => DiskHealthStatus.Failing,
+            _ => DiskHealthStatus.Unknown
+        };
+    }
+
+    internal IEnumerable<string> GetDriveLettersForDisk(string diskDeviceId)
+    {
+        var partitions = wmiQueryService.Query(
             $"ASSOCIATORS OF {{Win32_DiskDrive.DeviceID='{diskDeviceId}'}} WHERE AssocClass = Win32_DiskDriveToDiskPartition");
 
-        foreach (var partition in partitionSearcher.Get().Cast<ManagementObject>())
+        foreach (var partition in partitions)
         {
-            using var logicalDiskSearcher = new ManagementObjectSearcher(
-                $"ASSOCIATORS OF {{Win32_DiskPartition.DeviceID='{partition["DeviceID"]}'}} WHERE AssocClass = Win32_LogicalDiskToPartition");
+            var partitionDeviceId = partition.TryGetValue("DeviceID", out var partitionDeviceIdValue) ? partitionDeviceIdValue?.ToString() : null;
 
-            foreach (var logicalDisk in logicalDiskSearcher.Get().Cast<ManagementObject>())
+            var logicalDisks = wmiQueryService.Query(
+                $"ASSOCIATORS OF {{Win32_DiskPartition.DeviceID='{partitionDeviceId}'}} WHERE AssocClass = Win32_LogicalDiskToPartition");
+
+            foreach (var logicalDisk in logicalDisks)
             {
-                var driveLetter = logicalDisk["DeviceID"]?.ToString();
+                var driveLetter = logicalDisk.TryGetValue("DeviceID", out var driveLetterValue) ? driveLetterValue?.ToString() : null;
                 if (driveLetter is not null)
                 {
                     yield return driveLetter;

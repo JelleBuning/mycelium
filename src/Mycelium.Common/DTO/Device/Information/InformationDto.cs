@@ -1,3 +1,4 @@
+
 namespace Mycelium.Common.DTO.Device.Information;
 
 /// <summary>

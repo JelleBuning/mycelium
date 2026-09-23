@@ -1,10 +1,11 @@
+
 namespace Mycelium.Api.EntityFramework.Entities;
 
 public class DeviceInformation
 {
     public int Id { get; set; }
-    public string? OsName;
-    public string? OsVersion;
+    public string? OsName { get; set; }
+    public string? OsVersion { get; set; }
     public string? Version { get; set; }
     public string? ProductName { get; set; }
     public string? Processor { get; set; }

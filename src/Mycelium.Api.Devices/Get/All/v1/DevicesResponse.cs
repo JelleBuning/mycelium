@@ -1,3 +1,4 @@
+
 namespace Mycelium.Api.Devices.Get.All.v1;
 
 public sealed class DevicesResponse

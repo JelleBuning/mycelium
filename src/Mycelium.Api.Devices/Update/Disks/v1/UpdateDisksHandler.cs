@@ -28,6 +28,14 @@ public sealed class UpdateDisksHandler(AppDbContext dbContext, IHttpContextAcces
             return Result.Failure(Error.NotFound("Device not found"));
         }
 
+        var reportedDiskNames = command.Disks.Select(d => d.Name).ToHashSet();
+        var staleDisks = device.Disks.Where(d => !reportedDiskNames.Contains(d.Name)).ToList();
+        foreach (var staleDisk in staleDisks)
+        {
+            device.Disks.Remove(staleDisk);
+            dbContext.DeviceDisks.Remove(staleDisk);
+        }
+
         foreach (var updateDisk in command.Disks)
         {
             var disk = device.Disks.FirstOrDefault(d => d.Name == updateDisk.Name);

@@ -70,4 +70,25 @@ public class UpdateDisksHandlerTests
         Assert.That(stored.Used, Is.EqualTo(50));
         Assert.That(stored.HealthStatus, Is.EqualTo("Failing"));
     }
+
+    [Test]
+    public async Task Handle_DiskMissingFromPayload_RemovesDisk()
+    {
+        await using var dbContext = TestDbContextFactory.Create();
+        var device = new Device { Name = "MyPc", CreatedOn = DateTime.Now, LastActive = DateTime.Now };
+        device.Disks.Add(new DeviceDisk { Name = "C:", IsOsDisk = true, Used = 10, Size = 100, HealthStatus = "OK" });
+        device.Disks.Add(new DeviceDisk { Name = "E:", IsOsDisk = false, Used = 10, Size = 100, HealthStatus = "Failing" });
+        dbContext.Devices.Add(device);
+        await dbContext.SaveChangesAsync();
+
+        var handler = new UpdateDisksHandler(dbContext, TestHttpContextAccessorFactory.ForDevice(device.Id));
+        var disks = new List<DiskDto> { new() { Name = "C:", IsOsDisk = true, Used = 20, Size = 100, HealthStatus = "OK" } };
+
+        var result = await handler.Handle(new UpdateDisksCommand(device.Id, disks), CancellationToken.None);
+
+        Assert.That(result.IsSuccess, Is.True);
+        var stored = dbContext.DeviceDisks.Single();
+        Assert.That(stored.Name, Is.EqualTo("C:"));
+        Assert.That(stored.Used, Is.EqualTo(20));
+    }
 }

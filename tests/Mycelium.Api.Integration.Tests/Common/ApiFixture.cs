@@ -20,9 +20,7 @@ public class ApiFixture : WebApplicationFactory<Program>
         {
             services.RemoveAll<IDbContextOptionsConfiguration<AppDbContext>>();
             services.RemoveAll<DbContextOptions<AppDbContext>>();
-            
-            services.AddDbContext<AppDbContext>(options =>
-                options.UseInMemoryDatabase("MyceliumDatabase", root));
+            services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase("MyceliumDatabase", root));
         });
         return base.CreateHost(builder);
     }

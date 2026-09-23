@@ -5,41 +5,75 @@ using Mycelium.WorkerService.Core.DeviceInformation.Interfaces;
 
 namespace Mycelium.WorkerService.Core.Linux.DeviceInformation;
 
-public class DiskInformationRetriever : IDiskInformationRetriever
+public sealed class DiskInformationRetriever(IProcessRunner processRunner) : IDiskInformationRetriever
 {
     public List<DiskDto> Retrieve()
     {
+        var mountLines = TryReadMountLines();
+        var healthByParentDisk = new Dictionary<string, string?>();
+
         return DriveInfo.GetDrives()
             .Where(drive => drive.IsReady)
-            .Select(drive => new DiskDto
+            .Select(drive => (Drive: drive, Device: mountLines is null ? null : FindDeviceForMountPoint(mountLines, drive.Name)))
+            .Where(x => mountLines is null || IsBlockDevice(x.Device))
+            .Select(x => new DiskDto
             {
-                Name = drive.Name,
-                Size = drive.TotalSize,
-                Used = drive.TotalSize - drive.TotalFreeSpace,
-                IsOsDisk = drive.Name == "/",
-                HealthStatus = TryGetHealthStatus(drive.Name)
+                Name = x.Drive.Name,
+                Size = x.Drive.TotalSize,
+                Used = x.Drive.TotalSize - x.Drive.TotalFreeSpace,
+                IsOsDisk = x.Drive.Name == "/",
+                HealthStatus = x.Device is null ? null : TryGetHealthStatus(x.Device, healthByParentDisk)
             })
             .ToList();
     }
 
-    private static string? TryGetHealthStatus(string mountPoint)
+    internal static bool IsBlockDevice(string? device)
+    {
+        return device is not null
+               && device.StartsWith("/dev/", StringComparison.Ordinal)
+               && !device.StartsWith("/dev/loop", StringComparison.Ordinal);
+    }
+
+    private static List<string>? TryReadMountLines()
     {
         try
         {
-            var device = GetDeviceForMountPoint(mountPoint);
-            if (device is null)
-            {
-                return null;
-            }
-
-            var parentDisk = GetParentDisk(device);
-            var json = RunProcess("smartctl", $"-a -j {parentDisk}");
-            return ParseSmartctlHealth(json);
+            return File.ReadLines("/proc/mounts").ToList();
         }
         catch
         {
             return null;
         }
+    }
+
+    private string? TryGetHealthStatus(string device, Dictionary<string, string?> healthByParentDisk)
+    {
+        try
+        {
+            return GetHealthForDevice(device, healthByParentDisk);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    internal string? GetHealthForDevice(string device)
+    {
+        return GetHealthForDevice(device, new Dictionary<string, string?>());
+    }
+
+    internal string? GetHealthForDevice(string device, Dictionary<string, string?> healthByParentDisk)
+    {
+        var parentDisk = GetParentDisk(device);
+        if (healthByParentDisk.TryGetValue(parentDisk, out var cachedHealth))
+        {
+            return cachedHealth;
+        }
+
+        var health = ParseSmartctlHealth(RunProcess("smartctl", $"-a -j {parentDisk}"));
+        healthByParentDisk[parentDisk] = health;
+        return health;
     }
 
     internal static string? ParseSmartctlHealth(string json)
@@ -55,15 +89,10 @@ public class DiskInformationRetriever : IDiskInformationRetriever
         if (root.TryGetProperty("smart_status", out var smartStatus) &&
             smartStatus.TryGetProperty("passed", out var passed))
         {
-            return passed.GetBoolean() ? "OK" : "Failing";
+            return passed.GetBoolean() ? DiskHealthStatus.Ok : DiskHealthStatus.Failing;
         }
 
         return null;
-    }
-
-    private static string? GetDeviceForMountPoint(string mountPoint)
-    {
-        return FindDeviceForMountPoint(File.ReadLines("/proc/mounts"), mountPoint);
     }
 
     internal static string? FindDeviceForMountPoint(IEnumerable<string> mountLines, string mountPoint)
@@ -71,7 +100,7 @@ public class DiskInformationRetriever : IDiskInformationRetriever
         foreach (var line in mountLines)
         {
             var parts = line.Split(' ');
-            if (parts.Length >= 2 && parts[1] == mountPoint)
+            if (parts.Length >= 2 && parts[1].Replace(@"\040", " ") == mountPoint)
             {
                 return parts[0];
             }
@@ -80,17 +109,17 @@ public class DiskInformationRetriever : IDiskInformationRetriever
         return null;
     }
 
-    private static string GetParentDisk(string device)
+    internal string GetParentDisk(string device)
     {
         var parentName = RunProcess("lsblk", $"-no pkname {device}").Trim();
         return string.IsNullOrEmpty(parentName) ? device : $"/dev/{parentName}";
     }
 
-    private static string RunProcess(string fileName, string arguments)
+    private string RunProcess(string fileName, string arguments)
     {
-        var process = ProcessHelper.Start(fileName, arguments);
-        var output = process.StandardOutput.ReadToEnd();
-        process.WaitForExit();
+        using var handle = processRunner.Start(fileName, arguments);
+        var output = handle.ReadToEnd();
+        handle.WaitForExit();
         return output;
     }
 }

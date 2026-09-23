@@ -1,4 +1,6 @@
 using Mycelium.WorkerService.Core.Windows.DeviceInformation;
+using Mycelium.WorkerService.Core.Windows.Wmi;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Mycelium.WorkerService.Core.Windows.UnitTests.DeviceInformation;
@@ -54,5 +56,47 @@ public class FirewallSettingsRetrieverTests
         Assert.That(result.DomainFirewallEnabled, Is.True);
         Assert.That(result.PrivateFirewallEnabled, Is.False);
         Assert.That(result.PublicFirewallEnabled, Is.True);
+    }
+
+    [Test]
+    public void Retrieve_QueriesWmiAndMapsProfiles()
+    {
+        var wmiQueryService = Substitute.For<IWmiQueryService>();
+        wmiQueryService.Query("SELECT * FROM MSFT_NetFirewallProfile", @"\\.\root\StandardCimv2")
+            .Returns(new List<IReadOnlyDictionary<string, object?>>
+            {
+                new Dictionary<string, object?> { ["Name"] = "Domain", ["Enabled"] = "1" },
+                new Dictionary<string, object?> { ["Name"] = "Private", ["Enabled"] = "0" },
+                new Dictionary<string, object?> { ["Name"] = "Public", ["Enabled"] = "1" }
+            });
+
+        var retriever = new FirewallSettingsRetriever(wmiQueryService);
+
+        var result = retriever.Retrieve();
+
+        Assert.That(result.DomainFirewallEnabled, Is.True);
+        Assert.That(result.PrivateFirewallEnabled, Is.False);
+        Assert.That(result.PublicFirewallEnabled, Is.True);
+    }
+
+    [Test]
+    public void Retrieve_MissingEnabledProperty_TreatedAsNotEnabled()
+    {
+        var wmiQueryService = Substitute.For<IWmiQueryService>();
+        wmiQueryService.Query(Arg.Any<string>(), Arg.Any<string?>())
+            .Returns(new List<IReadOnlyDictionary<string, object?>>
+            {
+                new Dictionary<string, object?> { ["Name"] = "Domain" },
+                new Dictionary<string, object?> { ["Name"] = "Private" },
+                new Dictionary<string, object?> { ["Name"] = "Public" }
+            });
+
+        var retriever = new FirewallSettingsRetriever(wmiQueryService);
+
+        var result = retriever.Retrieve();
+
+        Assert.That(result.DomainFirewallEnabled, Is.False);
+        Assert.That(result.PrivateFirewallEnabled, Is.False);
+        Assert.That(result.PublicFirewallEnabled, Is.False);
     }
 }

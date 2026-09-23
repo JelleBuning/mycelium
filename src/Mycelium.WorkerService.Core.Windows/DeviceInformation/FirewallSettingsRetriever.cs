@@ -1,19 +1,21 @@
-using System.Management;
 using Mycelium.Common.DTO.Device;
 using Mycelium.WorkerService.Core.Windows.DeviceInformation.Interfaces;
+using Mycelium.WorkerService.Core.Windows.Wmi;
 
 namespace Mycelium.WorkerService.Core.Windows.DeviceInformation;
 
 #pragma warning disable CA1416
-public class FirewallSettingsRetriever : IFirewallSettingsRetriever
+public class FirewallSettingsRetriever(IWmiQueryService wmiQueryService) : IFirewallSettingsRetriever
 {
     public FirewallSettingsDto Retrieve()
     {
         const string firewallProfileScope = @"\\.\root\StandardCimv2";
         const string firewallProfileKey = "MSFT_NetFirewallProfile";
-        using var firewallObjectSearcher = new ManagementObjectSearcher(firewallProfileScope, "SELECT * FROM " + firewallProfileKey);
-        var netFirewallProfiles = firewallObjectSearcher.Get().Cast<ManagementBaseObject>()
-            .Select(x => (Name: x["Name"]?.ToString(), Enabled: x["Enabled"]?.ToString()));
+
+        var rows = wmiQueryService.Query("SELECT * FROM " + firewallProfileKey, firewallProfileScope);
+        var netFirewallProfiles = rows.Select(row => (
+            Name: row.TryGetValue("Name", out var name) ? name?.ToString() : null,
+            Enabled: row.TryGetValue("Enabled", out var enabled) ? enabled?.ToString() : null));
 
         return MapToFirewallSettings(netFirewallProfiles);
     }
